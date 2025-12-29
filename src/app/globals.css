@@ -1,8 +1,72 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ===== 7 WONDERS DUEL AUTHENTIC CI ===== */
+  /* Colors extracted from official rulebook PDF */
+
+  /* Base Theme - Dark Ancient */
+  --background: #1a1510;
+  --background-light: #252017;
+  --background-card: #1f1a14;
+  --foreground: #e8dcc8;
+  --foreground-muted: #9a8b75;
+
+  /* Parchment Palette (from PDF pages) */
+  --parchment: #e8d5b5;
+  --parchment-dark: #d4c4a8;
+  --parchment-light: #f5e8d0;
+  --sand: #c4a77d;
+
+  /* Metallic Accents (from coins & borders) */
+  --gold: #d4a853;
+  --gold-light: #e6c068;
+  --gold-dark: #a67c3d;
+  --bronze: #b87333;
+  --bronze-dark: #8b5a2b;
+  --copper: #c47f45;
+  --silver: #a8a8a8;
+
+  /* Game Board Colors (from military track) */
+  --teal: #3a8a8c;
+  --teal-dark: #0d7377;
+  --teal-light: #4db6ac;
+  --board-red: #8b2020;
+  --board-green: #2d5a3d;
+
+  /* ===== CARD TYPE COLORS (authentic from rulebook page 5) ===== */
+
+  /* Brown - Rohstoffe (Raw Materials) - warm earthy brown */
+  --card-brown: #8b5a2b;
+  --card-brown-light: #a67045;
+
+  /* Gray - Manufakturprodukte (Manufactured Goods) */
+  --card-gray: #6b7280;
+  --card-gray-light: #8b95a5;
+
+  /* Blue - Profangebäude (Civilian Buildings) - rich blue */
+  --card-blue: #2563eb;
+  --card-blue-light: #3b82f6;
+
+  /* Green - Forschungsgebäude (Scientific Buildings) - vibrant green */
+  --card-green: #16a34a;
+  --card-green-light: #22c55e;
+
+  /* Yellow - Handelsgebäude (Commercial Buildings) - golden yellow */
+  --card-yellow: #ca8a04;
+  --card-yellow-light: #eab308;
+
+  /* Red - Militärische Gebäude (Military Buildings) */
+  --card-red: #dc2626;
+  --card-red-light: #ef4444;
+
+  /* Purple - Gilden (Guilds) - rich violet */
+  --card-purple: #7c3aed;
+  --card-purple-light: #8b5cf6;
+
+  /* Semantic Colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 }
 
 @theme inline {
@@ -12,15 +76,435 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ===== BASE STYLES ===== */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  min-height: 100vh;
+}
+
+/* ===== ANTIQUE CARD STYLES ===== */
+
+/* Primary Card - Parchment look with gold accents */
+.antique-card {
+  background: linear-gradient(
+    160deg,
+    rgba(232, 213, 181, 0.08) 0%,
+    rgba(184, 115, 51, 0.04) 50%,
+    rgba(212, 196, 168, 0.06) 100%
+  );
+  border: 1px solid rgba(184, 115, 51, 0.3);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  position: relative;
+}
+
+.antique-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--gold) 20%,
+    var(--gold-light) 50%,
+    var(--gold) 80%,
+    transparent 100%
+  );
+  border-radius: 8px 8px 0 0;
+  opacity: 0.6;
+}
+
+.antique-card:hover {
+  border-color: rgba(212, 168, 83, 0.5);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(212, 168, 83, 0.08);
+}
+
+/* Simple card without top border */
+.simple-card {
+  background: rgba(31, 26, 20, 0.8);
+  border: 1px solid rgba(184, 115, 51, 0.25);
+  border-radius: 8px;
+}
+
+/* ===== WIN CONDITION STYLES ===== */
+.win-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.win-badge-points {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--bronze) 100%);
+  color: #1a1510;
+  box-shadow: 0 2px 8px rgba(212, 168, 83, 0.3);
+}
+
+.win-badge-military {
+  background: linear-gradient(135deg, var(--card-red) 0%, #991b1b 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.win-badge-science {
+  background: linear-gradient(135deg, var(--card-green) 0%, #15803d 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+}
+
+.win-badge-senate {
+  background: linear-gradient(135deg, var(--card-purple) 0%, #6d28d9 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+
+.win-badge-naval {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(58, 138, 140, 0.3);
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 2px 8px rgba(58, 138, 140, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--teal-light) 0%, var(--teal) 100%);
+  box-shadow:
+    0 4px 16px rgba(58, 138, 140, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--bronze) 100%);
+  color: #1a1510;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+  transform: translateY(-1px);
+}
+
+/* ===== NAVIGATION ===== */
+.nav-bar {
+  background: linear-gradient(180deg, #1f1a14 0%, var(--background) 100%);
+  border-bottom: 1px solid rgba(184, 115, 51, 0.25);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+}
+
+.nav-logo {
+  font-family: 'Georgia', serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--bronze) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+.nav-item {
+  color: var(--foreground-muted);
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.nav-item:hover {
+  color: var(--foreground);
+  background: rgba(184, 115, 51, 0.1);
+}
+
+.nav-item-active {
+  color: white;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+}
+
+/* ===== TYPOGRAPHY ===== */
+.section-title {
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-family: 'Georgia', serif;
+}
+
+.page-title {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 2rem;
+  font-family: 'Georgia', serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== SCORE TABLE STYLES ===== */
+.score-input {
+  background: rgba(26, 21, 16, 0.8);
+  border: 1px solid rgba(184, 115, 51, 0.25);
+  color: var(--foreground);
+  text-align: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.score-input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(58, 138, 140, 0.2);
+}
+
+.score-category {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.score-category:hover {
+  background: rgba(184, 115, 51, 0.05);
+}
+
+.category-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* ===== PROGRESS BAR (for win conditions) ===== */
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* ===== PLAYER SCORE DISPLAY ===== */
+.score-winner {
+  color: var(--card-green);
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+.score-loser {
+  color: var(--card-red);
+}
+
+.score-tie {
+  color: var(--gold);
+}
+
+/* ===== FORM ELEMENTS ===== */
+select, input[type="text"], input[type="number"] {
+  background: var(--background);
+  border: 1px solid rgba(184, 115, 51, 0.3);
+  color: var(--foreground);
+  border-radius: 6px;
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+}
+
+select:focus, input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(58, 138, 140, 0.15);
+}
+
+select option {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* ===== DECORATIVE ELEMENTS ===== */
+.gold-border {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 12px rgba(212, 168, 83, 0.15);
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(184, 115, 51, 0.4) 20%,
+    rgba(184, 115, 51, 0.4) 80%,
+    transparent 100%
+  );
+}
+
+/* Greek meander pattern approximation */
+.greek-border-bottom {
+  position: relative;
+}
+
+.greek-border-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--bronze) 0px,
+    var(--bronze) 8px,
+    transparent 8px,
+    transparent 12px
+  );
+  opacity: 0.6;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--bronze) 0%, var(--gold-dark) 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--gold) 0%, var(--bronze) 100%);
+}
+
+/* ===== RANK/LEADERBOARD STYLES ===== */
+.rank-1 { color: var(--gold); text-shadow: 0 0 8px rgba(212, 168, 83, 0.4); }
+.rank-2 { color: var(--silver); }
+.rank-3 { color: #cd7f32; }
+
+/* ===== CARD COLOR UTILITIES ===== */
+.card-color-blue { color: var(--card-blue); }
+.card-color-green { color: var(--card-green); }
+.card-color-yellow { color: var(--card-yellow); }
+.card-color-red { color: var(--card-red); }
+.card-color-purple { color: var(--card-purple); }
+.card-color-brown { color: var(--card-brown); }
+.card-color-gray { color: var(--card-gray); }
+
+/* ===== TEXT UTILITIES ===== */
+.text-gold { color: var(--gold); }
+.text-bronze { color: var(--bronze); }
+.text-sand { color: var(--sand); }
+.text-muted { color: var(--foreground-muted); }
+.text-teal { color: var(--teal); }
+.text-white { color: white; }
+
+/* ===== BACKGROUND UTILITIES ===== */
+.bg-dark { background: var(--background); }
+.bg-dark-light { background: var(--background-light); }
+.bg-card { background: var(--background-card); }
+
+/* ===== GAME CARD SPECIFIC ===== */
+.game-card {
+  background: linear-gradient(
+    160deg,
+    rgba(232, 213, 181, 0.06) 0%,
+    rgba(31, 26, 20, 0.95) 100%
+  );
+  border: 1px solid rgba(184, 115, 51, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.game-card:hover {
+  border-color: rgba(184, 115, 51, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.game-card-winner {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.game-card-loser {
+  color: var(--foreground-muted);
+}
+
+/* ===== TABLE STYLES ===== */
+.score-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.score-table th {
+  color: var(--gold);
+  font-weight: 600;
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(184, 115, 51, 0.3);
+}
+
+.score-table td {
+  padding: 8px 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(184, 115, 51, 0.1);
+}
+
+.score-table tr:hover td {
+  background: rgba(184, 115, 51, 0.05);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px currentColor; }
+  50% { box-shadow: 0 0 15px currentColor, 0 0 25px currentColor; }
+}
+
+.glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
 }

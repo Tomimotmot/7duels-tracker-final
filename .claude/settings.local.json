@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(node:*)",
+      "WebSearch",
+      "Bash(mkdir:*)",
+      "Bash(ls -la \"D:\\\\Coding\\\\7duels-tracker\\\\src\\\\app\\\\games\"\" 2>/dev/null || echo \"Directory might not exist yet \")",
+      "Bash(ls -la \"D:\\\\Coding\\\\7duels-tracker\\\\src\\\\components\"\" 2>/dev/null || echo \"Directory might not exist yet \")",
+      "Bash(git config:*)",
+      "Bash(ls -la \"D:\\\\Coding\\\\7duels-tracker\\\\src\\\\lib\"\" 2>/dev/null || echo \"Directory might not exist yet \")",
+      "Bash(ls -la \"D:\\\\Coding\\\\7duels-tracker\\\\src\\\\types\"\" 2>/dev/null || echo \"Directory might not exist yet \")",
+      "Bash(git add:*)"
+    ]
+  }
+}

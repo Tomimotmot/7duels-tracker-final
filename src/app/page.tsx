@@ -1,65 +1,143 @@
-import Image from "next/image";
+import { createClient } from '@/lib/supabase/server'
+import { GameWithPlayers, WinCondition } from '@/types/database.types'
+import GameCard from '@/components/GameCard'
+import Link from 'next/link'
 
-export default function Home() {
+async function getRecentGames(): Promise<GameWithPlayers[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('games')
+    .select(`
+      *,
+      player_1:players!games_player_1_id_fkey(*),
+      player_2:players!games_player_2_id_fkey(*),
+      winner:players!games_winner_id_fkey(*),
+      win_condition:win_conditions(*)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  if (error) {
+    console.error('Error fetching games:', error)
+    return []
+  }
+  return data || []
+}
+
+async function getWinConditions(): Promise<WinCondition[]> {
+  const supabase = await createClient()
+  const { data } = await supabase.from('win_conditions').select('*').order('id')
+  return data || []
+}
+
+function getWinConditionColor(name: string): string {
+  switch (name) {
+    case 'Punkte': return 'var(--gold)'
+    case 'Militär': return 'var(--card-red)'
+    case 'Forschung': return 'var(--card-green)'
+    case 'Senat': return 'var(--card-purple)'
+    case 'Seemacht': return 'var(--teal-light)'
+    default: return 'var(--bronze)'
+  }
+}
+
+export default async function Home() {
+  const [games, winConditions] = await Promise.all([
+    getRecentGames(),
+    getWinConditions()
+  ])
+  const supabase = await createClient()
+  const { data: allGames } = await supabase.from('games').select('*')
+
+  // Calculate win condition statistics
+  const totalGames = allGames?.length || 0
+  const winConditionStats = winConditions.map(wc => {
+    const count = allGames?.filter(g => g.win_condition_id === wc.id).length || 0
+    const percentage = totalGames > 0 ? Math.round((count / totalGames) * 100) : 0
+    return { condition: wc, count, percentage }
+  }).sort((a, b) => b.count - a.count)
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen">
+      <main className="container mx-auto px-4 py-8">
+        {/* Win Condition Statistics */}
+        <div className="antique-card p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="section-title text-lg">Siegbedingungen</h2>
+            <span className="text-[var(--foreground-muted)] text-sm">{totalGames} Spiele gesamt</span>
+          </div>
+          <div className="space-y-4">
+            {winConditionStats.map(stat => {
+              const color = getWinConditionColor(stat.condition.name)
+              return (
+                <div key={stat.condition.id} className="group">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{
+                          background: color,
+                          boxShadow: `0 0 10px ${color}`
+                        }}
+                      />
+                      <span className="text-white font-medium">{stat.condition.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[var(--foreground-muted)] text-xs">{stat.count}</div>
+                      <div
+                        className="text-2xl font-bold"
+                        style={{ color }}
+                      >
+                        {stat.percentage}%
+                      </div>
+                    </div>
+                  </div>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-bar-fill"
+                      style={{
+                        width: `${Math.max(stat.percentage, 3)}%`,
+                        background: `linear-gradient(90deg, ${color}66 0%, ${color} 100%)`,
+                        boxShadow: `0 0 12px ${color}40`
+                      }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+            {winConditionStats.length === 0 && (
+              <p className="text-[var(--foreground-muted)] text-center py-4">Noch keine Spiele vorhanden</p>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Recent Games Section */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="section-title text-xl">Letzte Spiele</h2>
+            <Link
+              href="/games"
+              className="text-[var(--teal)] hover:text-[var(--teal-light)] text-sm transition-colors"
+            >
+              Alle anzeigen
+            </Link>
+          </div>
+          {games.length === 0 ? (
+            <div className="antique-card p-8 text-center">
+              <p className="text-[var(--foreground-muted)] mb-4">Noch keine Spiele vorhanden.</p>
+              <Link href="/new-game" className="btn-primary inline-block">
+                Erstes Spiel eintragen
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {games.map((game) => (
+                <GameCard key={game.id} game={game} />
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
-  );
+  )
 }
