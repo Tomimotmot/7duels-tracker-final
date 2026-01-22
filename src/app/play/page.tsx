@@ -61,6 +61,9 @@ function PlayPageContent() {
   const [victoryStep, setVictoryStep] = useState<'winner' | 'condition'>('winner')
   const [selectedWinner, setSelectedWinner] = useState<1 | 2 | null>(null)
   const [winConditions, setWinConditions] = useState<WinCondition[]>([])
+  const [allWinConditions, setAllWinConditions] = useState<WinCondition[]>([])
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   // Fetch win conditions
   useEffect(() => {
@@ -71,12 +74,71 @@ function PlayPageContent() {
         .select('*')
         .order('id')
       if (data) {
-        // Filter out "Punkte" since that's not an instant victory
+        setAllWinConditions(data)
+        // Filter out "Punkte" since that's not an instant victory (for modal)
         setWinConditions(data.filter(w => w.name !== 'Punkte'))
       }
     }
     fetchWinConditions()
   }, [])
+
+  // Save game to database
+  const saveGame = useCallback(async (winner: 1 | 2, winConditionName: string) => {
+    setSaving(true)
+    const supabase = createClient()
+
+    // Find win condition ID
+    const winCondition = allWinConditions.find(w => w.name === winConditionName)
+    if (!winCondition) {
+      console.error('Win condition not found:', winConditionName)
+      setSaving(false)
+      return
+    }
+
+    const winnerId = winner === 1 ? gameState.p1Id : gameState.p2Id
+
+    const { error } = await supabase.from('games').insert({
+      player_1_id: gameState.p1Id,
+      player_2_id: gameState.p2Id,
+      winner_id: winnerId,
+      win_condition_id: winCondition.id,
+      created_at: new Date().toISOString(),
+      // All scores 0 for instant victory
+      p1_score_blue_cards: 0,
+      p1_score_green_cards: 0,
+      p1_score_yellow_cards: 0,
+      p1_score_purple_cards: 0,
+      p1_score_wonders_points: 0,
+      p1_score_progress_points: 0,
+      p1_score_coin_points: 0,
+      p1_score_military_points: 0,
+      p1_score_gods_cards: 0,
+      p1_score_senator_points: 0,
+      p1_score_great_temple: 0,
+      p1_score_thalassa_points: 0,
+      p2_score_blue_cards: 0,
+      p2_score_green_cards: 0,
+      p2_score_yellow_cards: 0,
+      p2_score_purple_cards: 0,
+      p2_score_wonders_points: 0,
+      p2_score_progress_points: 0,
+      p2_score_coin_points: 0,
+      p2_score_military_points: 0,
+      p2_score_gods_cards: 0,
+      p2_score_senator_points: 0,
+      p2_score_great_temple: 0,
+      p2_score_thalassa_points: 0,
+    })
+
+    if (error) {
+      console.error('Error saving game:', error)
+      setSaving(false)
+      return
+    }
+
+    setSaving(false)
+    setSaved(true)
+  }, [gameState.p1Id, gameState.p2Id, allWinConditions])
 
   // Timer logic
   useEffect(() => {
@@ -158,8 +220,8 @@ function PlayPageContent() {
     setShowEndAgeModal(false)
   }, [])
 
-  // Victory conditions
-  const declareVictory = useCallback((winner: 1 | 2, condition: string) => {
+  // Victory conditions - automatically saves instant victories
+  const declareVictory = useCallback(async (winner: 1 | 2, condition: string) => {
     setGameState(prev => ({
       ...prev,
       isRunning: false,
@@ -167,7 +229,12 @@ function PlayPageContent() {
       winCondition: condition
     }))
     setShowVictoryModal(false)
-  }, [])
+
+    // Auto-save for instant victories (not "Punkte")
+    if (condition !== 'Punkte') {
+      await saveGame(winner, condition)
+    }
+  }, [saveGame])
 
   // Go to scoring page
   const goToScoring = useCallback((winCondition: string) => {
@@ -205,6 +272,8 @@ function PlayPageContent() {
   // Game ended
   if (gameState.winner && gameState.winCondition) {
     const winnerName = gameState.winner === 1 ? gameState.p1Name : gameState.p2Name
+    const isInstantVictory = gameState.winCondition !== 'Punkte'
+
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="antique-card p-8 text-center max-w-md">
@@ -212,19 +281,45 @@ function PlayPageContent() {
           <div className="text-[var(--card-green)] text-2xl font-bold mb-2">
             {winnerName} gewinnt!
           </div>
-          <div className="text-[var(--foreground-muted)] mb-6">
+          <div className="text-[var(--foreground-muted)] mb-4">
             Siegbedingung: {gameState.winCondition}
           </div>
+
+          {/* Status for instant victory */}
+          {isInstantVictory && (
+            <div className="mb-6">
+              {saving && (
+                <div className="text-[var(--foreground-muted)]">Speichern...</div>
+              )}
+              {saved && (
+                <div className="text-[var(--card-green)] font-semibold">✓ Spiel gespeichert!</div>
+              )}
+            </div>
+          )}
+
           <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => goToScoring(gameState.winCondition!)}
-              className="btn-primary"
-            >
-              Punkte eintragen
-            </button>
-            <Link href="/new-game" className="btn-gold">
-              Neues Spiel
-            </Link>
+            {isInstantVictory ? (
+              <>
+                <Link href="/" className="btn-primary">
+                  Zur Übersicht
+                </Link>
+                <Link href="/new-game" className="btn-gold">
+                  Neues Spiel
+                </Link>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => goToScoring(gameState.winCondition!)}
+                  className="btn-primary"
+                >
+                  Punkte eintragen
+                </button>
+                <Link href="/new-game" className="btn-gold">
+                  Neues Spiel
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
