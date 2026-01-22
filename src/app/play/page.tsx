@@ -226,100 +226,102 @@ function PlayPageContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Age Indicator */}
-      <div className="bg-[var(--background-light)] border-b border-[rgba(184,115,51,0.3)] p-4">
-        <div className="flex justify-center items-center gap-4">
+    <div className="fixed inset-0 flex flex-col overflow-hidden">
+      {/* Player 2 (top, rotated 180deg for face-to-face play) */}
+      <button
+        onClick={() => gameState.activePlayer === 2 ? switchPlayer() : (gameState.activePlayer === null && startGame(2))}
+        disabled={gameState.activePlayer === 1 || !!gameState.winner}
+        className={`flex-1 flex flex-col items-center justify-center transition-all touch-manipulation ${
+          gameState.activePlayer === 2
+            ? 'bg-[var(--teal)] text-white'
+            : 'bg-[var(--background-light)] text-[var(--foreground-muted)]'
+        }`}
+        style={{ transform: 'rotate(180deg)' }}
+      >
+        <div className="text-lg sm:text-2xl font-semibold mb-2">{gameState.p2Name}</div>
+        <div className={`text-[4.5rem] sm:text-8xl font-mono font-bold leading-none chess-clock-time ${gameState.p2Time < 60 ? 'low-time' : ''}`}>
+          {formatTime(gameState.p2Time)}
+        </div>
+        {/* Age indicator inside player area */}
+        <div className="flex items-center gap-2 mt-3">
           {[1, 2, 3].map(age => (
             <div
               key={age}
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold transition-all ${
+              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
                 gameState.age === age
-                  ? 'bg-[var(--teal)] text-white scale-110'
+                  ? 'bg-white/30 text-white'
                   : gameState.age > age
                   ? 'bg-[var(--gold)] text-[var(--background)]'
-                  : 'bg-[rgba(184,115,51,0.2)] text-[var(--foreground-muted)]'
+                  : 'bg-white/10 text-white/40'
               }`}
             >
               {age}
             </div>
           ))}
         </div>
-        <div className="text-center mt-2 text-[var(--gold)] font-semibold">
-          Zeitalter {gameState.age}
-        </div>
-      </div>
+      </button>
 
-      {/* Chess Clock */}
-      <div className="flex-1 flex flex-col">
-        {/* Player 2 (top, rotated 180deg for face-to-face play) */}
+      {/* Compact Center Controls */}
+      <div className="bg-[var(--background)] border-y border-[rgba(184,115,51,0.3)] py-2 px-2 flex justify-center items-center gap-2 shrink-0">
         <button
-          onClick={() => gameState.activePlayer === 2 ? switchPlayer() : (gameState.activePlayer === null && startGame(2))}
-          disabled={gameState.activePlayer === 1 || !!gameState.winner}
-          className={`flex-1 flex flex-col items-center justify-center p-8 transition-all ${
-            gameState.activePlayer === 2
-              ? 'bg-[var(--teal)] text-white'
-              : 'bg-[var(--background-light)] text-[var(--foreground-muted)]'
-          } ${gameState.activePlayer === 2 ? 'cursor-pointer' : ''}`}
-          style={{ transform: 'rotate(180deg)' }}
+          onClick={togglePause}
+          className="btn-gold px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base"
+          disabled={!gameState.activePlayer}
         >
-          <div className="text-2xl font-semibold mb-4">{gameState.p2Name}</div>
-          <div className={`text-7xl font-mono font-bold ${gameState.p2Time < 60 ? 'text-[var(--card-red)]' : ''}`}>
-            {formatTime(gameState.p2Time)}
-          </div>
-          {gameState.activePlayer === 2 && (
-            <div className="mt-4 text-lg opacity-80">Tippen zum Wechseln</div>
-          )}
+          {gameState.isRunning ? '⏸' : '▶'}
         </button>
 
-        {/* Center Controls */}
-        <div className="bg-[var(--background)] border-y border-[rgba(184,115,51,0.3)] p-4 flex justify-center items-center gap-4">
-          <button
-            onClick={togglePause}
-            className="btn-gold px-6 py-3"
-            disabled={!gameState.activePlayer}
-          >
-            {gameState.isRunning ? '⏸ Pause' : '▶ Weiter'}
-          </button>
-
-          <button
-            onClick={endAge}
-            className="btn-primary px-6 py-3"
-          >
-            {gameState.age < 3 ? `Zeitalter ${gameState.age} beenden` : 'Spiel beenden (Punkte)'}
-          </button>
-
-          <button
-            onClick={() => setShowVictoryModal(true)}
-            className="px-6 py-3 rounded-lg font-semibold transition-all"
-            style={{
-              background: 'linear-gradient(135deg, var(--card-red) 0%, #991b1b 100%)',
-              color: 'white'
-            }}
-          >
-            Sofortsieg
-          </button>
-        </div>
-
-        {/* Player 1 (bottom) */}
         <button
-          onClick={() => gameState.activePlayer === 1 ? switchPlayer() : (gameState.activePlayer === null && startGame(1))}
-          disabled={gameState.activePlayer === 2 || !!gameState.winner}
-          className={`flex-1 flex flex-col items-center justify-center p-8 transition-all ${
-            gameState.activePlayer === 1
-              ? 'bg-[var(--teal)] text-white'
-              : 'bg-[var(--background-light)] text-[var(--foreground-muted)]'
-          } ${gameState.activePlayer === 1 ? 'cursor-pointer' : ''}`}
+          onClick={endAge}
+          className="btn-primary px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base"
         >
-          <div className="text-2xl font-semibold mb-4">{gameState.p1Name}</div>
-          <div className={`text-7xl font-mono font-bold ${gameState.p1Time < 60 ? 'text-[var(--card-red)]' : ''}`}>
-            {formatTime(gameState.p1Time)}
-          </div>
-          {gameState.activePlayer === 1 && (
-            <div className="mt-4 text-lg opacity-80">Tippen zum Wechseln</div>
-          )}
+          {gameState.age < 3 ? `→ ${gameState.age + 1}` : 'Ende'}
+        </button>
+
+        <button
+          onClick={() => setShowVictoryModal(true)}
+          className="px-3 py-2 text-sm sm:px-6 sm:py-3 sm:text-base rounded-lg font-semibold"
+          style={{
+            background: 'linear-gradient(135deg, var(--card-red) 0%, #991b1b 100%)',
+            color: 'white'
+          }}
+        >
+          Sieg!
         </button>
       </div>
+
+      {/* Player 1 (bottom) */}
+      <button
+        onClick={() => gameState.activePlayer === 1 ? switchPlayer() : (gameState.activePlayer === null && startGame(1))}
+        disabled={gameState.activePlayer === 2 || !!gameState.winner}
+        className={`flex-1 flex flex-col items-center justify-center transition-all touch-manipulation ${
+          gameState.activePlayer === 1
+            ? 'bg-[var(--teal)] text-white'
+            : 'bg-[var(--background-light)] text-[var(--foreground-muted)]'
+        }`}
+      >
+        <div className="text-lg sm:text-2xl font-semibold mb-2">{gameState.p1Name}</div>
+        <div className={`text-[4.5rem] sm:text-8xl font-mono font-bold leading-none chess-clock-time ${gameState.p1Time < 60 ? 'low-time' : ''}`}>
+          {formatTime(gameState.p1Time)}
+        </div>
+        {/* Age indicator inside player area */}
+        <div className="flex items-center gap-2 mt-3">
+          {[1, 2, 3].map(age => (
+            <div
+              key={age}
+              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
+                gameState.age === age
+                  ? 'bg-white/30 text-white'
+                  : gameState.age > age
+                  ? 'bg-[var(--gold)] text-[var(--background)]'
+                  : 'bg-white/10 text-white/40'
+              }`}
+            >
+              {age}
+            </div>
+          ))}
+        </div>
+      </button>
 
       {/* Victory Modal */}
       {showVictoryModal && (

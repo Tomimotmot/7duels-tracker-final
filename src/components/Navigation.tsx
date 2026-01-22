@@ -55,6 +55,11 @@ function NavIcon({ icon, className }: { icon: string; className?: string }) {
 export default function Navigation() {
   const pathname = usePathname()
 
+  // Hide navigation on play page for fullscreen chess clock
+  if (pathname === '/play') {
+    return null
+  }
+
   return (
     <>
       {/* Desktop Navigation - Top Bar */}
