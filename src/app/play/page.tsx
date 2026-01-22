@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { WinCondition } from '@/types/database.types'
 
 const INITIAL_TIME = 25 * 60 // 25 minutes in seconds
+const INCREMENT = 5 // 5 seconds bonus per move
 
 interface GameState {
   p1Time: number
@@ -108,15 +109,20 @@ function PlayPageContent() {
     }
   }, [gameState.isRunning, gameState.activePlayer, gameState.winner])
 
-  // Switch player turn
+  // Switch player turn - adds INCREMENT bonus to the player who just finished their turn
   const switchPlayer = useCallback(() => {
     if (gameState.winner) return
 
-    setGameState(prev => ({
-      ...prev,
-      activePlayer: prev.activePlayer === 1 ? 2 : 1,
-      isRunning: true
-    }))
+    setGameState(prev => {
+      const currentPlayer = prev.activePlayer
+      const timeKey = currentPlayer === 1 ? 'p1Time' : 'p2Time'
+      return {
+        ...prev,
+        [timeKey]: prev[timeKey] + INCREMENT, // +5 seconds bonus
+        activePlayer: currentPlayer === 1 ? 2 : 1,
+        isRunning: true
+      }
+    })
   }, [gameState.winner])
 
   // Start game (first move)
