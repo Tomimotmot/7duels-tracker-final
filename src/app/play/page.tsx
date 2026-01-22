@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -29,6 +29,14 @@ function formatTime(seconds: number): string {
 }
 
 export default function PlayPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-[var(--gold)]">Laden...</div></div>}>
+      <PlayPageContent />
+    </Suspense>
+  )
+}
+
+function PlayPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
