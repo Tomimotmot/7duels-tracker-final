@@ -508,3 +508,60 @@ select option {
 .fade-in {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* ===== CHESS CLOCK STYLES ===== */
+.chess-clock-player {
+  transition: all 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chess-clock-player.active {
+  background: var(--teal);
+}
+
+.chess-clock-player.inactive {
+  background: var(--background-light);
+}
+
+.chess-clock-time {
+  font-variant-numeric: tabular-nums;
+}
+
+.chess-clock-time.low-time {
+  color: var(--card-red);
+  animation: pulse-red 1s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+
+/* Bottom padding for mobile navigation */
+@media (max-width: 767px) {
+  main {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* Safe area for iOS */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Larger touch targets on mobile */
+@media (max-width: 767px) {
+  .score-input {
+    min-height: 44px;
+    font-size: 18px;
+  }
+
+  select, input[type="text"], input[type="number"] {
+    min-height: 48px;
+    font-size: 16px;
+  }
+}

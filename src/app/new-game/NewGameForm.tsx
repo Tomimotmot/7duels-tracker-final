@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Player, WinCondition, GameInsert } from '@/types/database.types'
 
@@ -25,14 +25,49 @@ const scoreCategories = [
 
 type ScoreKey = typeof scoreCategories[number]['key']
 
+// Map win condition names from play page to database IDs
+const winConditionMap: Record<string, string> = {
+  'Punkte': 'Punkte',
+  'Militär': 'Militär',
+  'Wissenschaft': 'Wissenschaft',
+  'Zeit abgelaufen': 'Punkte', // Time ran out counts as points victory
+}
+
 export default function NewGameForm({ players, winConditions }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [p1, setP1] = useState('')
   const [p2, setP2] = useState('')
   const [winner, setWinner] = useState('')
   const [winCond, setWinCond] = useState<number | null>(null)
+  const [gameDate, setGameDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [fromGame, setFromGame] = useState(false)
+
+  // Pre-fill from play page parameters
+  useEffect(() => {
+    const p1Id = searchParams.get('p1Id')
+    const p2Id = searchParams.get('p2Id')
+    const winnerId = searchParams.get('winnerId')
+    const winConditionName = searchParams.get('winCondition')
+
+    if (p1Id && p2Id) {
+      setP1(p1Id)
+      setP2(p2Id)
+      setFromGame(true)
+    }
+    if (winnerId) {
+      setWinner(winnerId)
+    }
+    if (winConditionName) {
+      const mappedName = winConditionMap[winConditionName] || winConditionName
+      const condition = winConditions.find(w => w.name === mappedName)
+      if (condition) {
+        setWinCond(condition.id)
+      }
+    }
+  }, [searchParams, winConditions])
 
   // Score states for both players
   const [p1Scores, setP1Scores] = useState<Record<ScoreKey, number>>(
@@ -56,6 +91,7 @@ export default function NewGameForm({ players, winConditions }: Props) {
       player_2_id: p2,
       winner_id: winner,
       win_condition_id: winCond,
+      created_at: new Date(gameDate).toISOString(),
       p1_score_blue_cards: p1Scores.blue_cards,
       p1_score_green_cards: p1Scores.green_cards,
       p1_score_yellow_cards: p1Scores.yellow_cards,
@@ -98,6 +134,28 @@ export default function NewGameForm({ players, winConditions }: Props) {
         </div>
       )}
 
+      {/* Game Completed Banner */}
+      {fromGame && (
+        <div className="p-4 rounded-lg" style={{ background: 'rgba(58, 138, 140, 0.15)', border: '1px solid var(--teal)' }}>
+          <div className="text-[var(--teal)] font-semibold mb-1">Spiel beendet!</div>
+          <div className="text-[var(--foreground-muted)] text-sm">
+            Trage jetzt die Punkte ein, um das Spiel zu speichern.
+          </div>
+        </div>
+      )}
+
+      {/* Date Selection */}
+      <div>
+        <label className="block text-sm font-medium text-[var(--gold)] mb-3">Datum</label>
+        <input
+          type="date"
+          value={gameDate}
+          onChange={e => setGameDate(e.target.value)}
+          className="rounded-lg p-3 w-full"
+          required
+        />
+      </div>
+
       {/* Player Selection */}
       <div>
         <label className="block text-sm font-medium text-[var(--gold)] mb-3">Spieler auswählen</label>
@@ -107,6 +165,7 @@ export default function NewGameForm({ players, winConditions }: Props) {
             onChange={e => setP1(e.target.value)}
             className="rounded-lg p-3 w-full"
             required
+            disabled={fromGame}
           >
             <option value="">Spieler 1</option>
             {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -116,12 +175,46 @@ export default function NewGameForm({ players, winConditions }: Props) {
             onChange={e => setP2(e.target.value)}
             className="rounded-lg p-3 w-full"
             required
+            disabled={fromGame}
           >
             <option value="">Spieler 2</option>
             {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
       </div>
+
+      {/* Start Game Button - only show when players selected and not coming from a game */}
+      {p1 && p2 && p1 !== p2 && !fromGame && (
+        <button
+          type="button"
+          onClick={() => {
+            const params = new URLSearchParams({
+              p1Id: p1,
+              p2Id: p2,
+              p1Name: pl1?.name || 'Spieler 1',
+              p2Name: pl2?.name || 'Spieler 2',
+            })
+            router.push(`/play?${params.toString()}`)
+          }}
+          className="w-full py-4 rounded-lg font-semibold text-lg transition-all"
+          style={{
+            background: 'linear-gradient(135deg, var(--gold) 0%, var(--bronze) 100%)',
+            color: 'var(--background)',
+            boxShadow: '0 4px 16px rgba(212, 168, 83, 0.3)'
+          }}
+        >
+          Spiel starten (mit Schachuhr)
+        </button>
+      )}
+
+      {/* Divider */}
+      {p1 && p2 && p1 !== p2 && !fromGame && (
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px bg-[rgba(184,115,51,0.3)]" />
+          <span className="text-[var(--foreground-muted)] text-sm">oder Ergebnis direkt eintragen</span>
+          <div className="flex-1 h-px bg-[rgba(184,115,51,0.3)]" />
+        </div>
+      )}
 
       {/* Score Table */}
       {p1 && p2 && (

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
@@ -16,6 +16,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "7Duels Tracker - 7 Wonders Duel Statistiken",
   description: "Verfolge deine 7 Wonders Duel Spiele und Statistiken",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: '7Duels',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#1a1510',
 };
 
 export default function RootLayout({
